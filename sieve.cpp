@@ -77,12 +77,12 @@ std::vector<int> sieveOfEratosthenes::simple_sieve_(int n)
 std::vector<int> sieveOfEratosthenes::segmented_sieve_(int n)
 {
    if (n < 2) return std::vector<int>();
-   
+
    // compute base primes
    int ssiz = floor(sqrt(n)) + 1;
    std::vector<int> prime = simple_sieve_(ssiz);
    int psiz = prime.size();
-   
+
    // compute subsequent sieve segments of size ssiz
    bool* sieve = new bool[ssiz];
    for (int i = ssiz; i <= n; i += ssiz) {
@@ -92,12 +92,12 @@ std::vector<int> sieveOfEratosthenes::segmented_sieve_(int n)
          int lo = floor(i / prime[j]) * prime[j];
          if (lo < i)
             lo += prime[j];
-         int hi = (i + ssiz <= n) ? i + ssiz : n + 1; 
+         int hi = (i + ssiz <= n) ? i + ssiz : n + 1;
          for (int k = lo; k < hi; k += prime[j])
             sieve[k - i] = false;
       }
       // append primes found in current segment
-      int hi = (i + ssiz <= n) ? ssiz : n + 1 - i; 
+      int hi = (i + ssiz <= n) ? ssiz : n + 1 - i;
       for (int j = 0; j < hi; j++)
          if (sieve[j])
             prime.push_back(i + j);
@@ -109,7 +109,7 @@ std::vector<int> sieveOfEratosthenes::segmented_sieve_(int n)
 std::vector<int> sieveOfEratosthenes::n_primes_(int n)
 {
    if (n < 1) return std::vector<int>();
-    
+
    int ssiz;
    if (n >= 6)
       ssiz = floor(sqrt(n*log(n)+n*log(log(n))))+1;
@@ -119,6 +119,9 @@ std::vector<int> sieveOfEratosthenes::n_primes_(int n)
    // compute base primes
    std::vector<int> prime = simple_sieve_(ssiz);
    int psiz = prime.size();
+
+   if (psiz >= n)
+      return std::vector<int>(prime.begin(), prime.begin() + n);
 
    // compute subsequent sieve segments of size ssiz
    bool* sieve = new bool[ssiz];
@@ -150,10 +153,9 @@ int sieveOfEratosthenes::count_primes_(int n)
    // compute and count base primes
    int ssiz = sqrt(n) + 1;
    std::vector<int> prime = simple_sieve_(ssiz);
-   printVector(prime);
-   int psiz = prime.size(); 
+   int psiz = prime.size();
    int count = psiz;
-   
+
    // compute subsequent sieve segments and count primes found
    bool* sieve = new bool[ssiz];
    for (int i = ssiz; i <= n; i += ssiz) {
@@ -163,15 +165,15 @@ int sieveOfEratosthenes::count_primes_(int n)
          int lo = floor(i / prime[j]) * prime[j];
          if (lo < i)
             lo += prime[j];
-         int hi = (i + ssiz <= n) ? i + ssiz : n + 1; 
+         int hi = (i + ssiz <= n) ? i + ssiz : n + 1;
          for (int k = lo; k < hi; k += prime[j])
             sieve[k - i] = false;
       }
       // append primes found in current segment
-      int hi = (i + ssiz <= n) ? ssiz : n + 1 - i; 
+      int hi = (i + ssiz <= n) ? ssiz : n + 1 - i;
       for (int j = 0; j < hi; j++)
          if (sieve[j])
-            ++count;   
+            ++count;
    }
    delete [] sieve;
    return count;
