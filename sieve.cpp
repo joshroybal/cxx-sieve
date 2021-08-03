@@ -4,20 +4,20 @@
 #include <cmath>
 #include "sieve.hpp"
 
-static const int LIMIT = 1000;
+static const unsigned LIMIT = 1000;
 
-void printArray(const bool* arr, int n)
+void printArray(const bool* arr, unsigned n)
 {
     if (n > LIMIT) return;
-    for (int i = 0; i < n; i++)
+    for (unsigned i = 0; i < n; i++)
         std::cout << ' ' << arr[i];
     std::cout << std::endl;
 }
 
-void printVector(const std::vector<int>& v)
+void printVector(const std::vector<unsigned>& v)
 {
     if (v.size() > LIMIT) return;
-    std::vector<int>::const_iterator cit;
+    std::vector<unsigned>::const_iterator cit;
     for (cit = v.begin(); cit != v.end(); cit++) {
         std::cout << std::setw(12) << *cit;
         if ((cit - v.begin() + 1) % 6 == 0)
@@ -30,75 +30,72 @@ void printVector(const std::vector<int>& v)
 // Class implementation of sieve of Eratosthenes
 
 // public
-int sieveOfEratosthenes::nthPrime(int n)
+unsigned sieveOfEratosthenes::nthPrime(unsigned n) const
 {
     return nth_prime_(n);
 }
 
-int sieveOfEratosthenes::countPrimes(int n)
+unsigned sieveOfEratosthenes::countPrimes(unsigned n) const
 {
     return count_primes_(n);
 }
 
-std::vector<int> sieveOfEratosthenes::simpleSieve(int n)
+std::vector<unsigned> sieveOfEratosthenes::simpleSieve(unsigned n) const
 {
     return simple_sieve_(n);
 }
 
-std::vector<int> sieveOfEratosthenes::segmentedSieve(int n)
+std::vector<unsigned> sieveOfEratosthenes::segmentedSieve(unsigned n) const
 {
     return segmented_sieve_(n);
 }
 
-std::vector<int> sieveOfEratosthenes::nPrimes(int n)
+std::vector<unsigned> sieveOfEratosthenes::nPrimes(unsigned n) const
 {
     return n_primes_(n);
 }
 
-// private
-std::vector<int> sieveOfEratosthenes::simple_sieve_(int n)
+void sieveOfEratosthenes::gapTable() const
 {
-   if (n < 2) return std::vector<int>();
-   int ssiz = n + 1;
+    gap_table_();
+}
+
+// private
+std::vector<unsigned> sieveOfEratosthenes::simple_sieve_(unsigned n) const
+{
+   if (n < 2) return std::vector<unsigned>();
+   unsigned ssiz = n + 1;
    bool* sieve = new bool[ssiz];
    std::fill(sieve, sieve + 2, false);
    std::fill(sieve + 2, sieve + ssiz, true);
-   std::vector<int> prime;
-   for (int i = 2; i < sqrt(ssiz); i++)
-      for (int j = i * i; j < ssiz; j += i)
+   std::vector<unsigned> prime;
+   for (unsigned i = 2; i < sqrt(ssiz); i++)
+      for (unsigned j = i * i; j < ssiz; j += i)
          sieve[j] = false;
-   for (int i = 2; i < ssiz; i++)
+   for (unsigned i = 2; i < ssiz; i++)
       if (sieve[i])
          prime.push_back(i);
    delete [] sieve;
    return prime;
 }
 
-std::vector<int> sieveOfEratosthenes::segmented_sieve_(int n)
+std::vector<unsigned> sieveOfEratosthenes::segmented_sieve_(unsigned n) const
 {
-   if (n < 2) return std::vector<int>();
+   if (n < 2) return std::vector<unsigned>();
 
    // compute base primes
-   int ssiz = floor(sqrt(n)) + 1;
-   std::vector<int> prime = simple_sieve_(ssiz);
-   int psiz = prime.size();
+   unsigned ssiz = floor(sqrt(n)) + 1;
+   std::vector<unsigned> prime = simple_sieve_(ssiz);
+   unsigned psiz = prime.size();
 
    // compute subsequent sieve segments of size ssiz
    bool* sieve = new bool[ssiz];
-   for (int i = ssiz; i <= n; i += ssiz) {
+   for (unsigned i = ssiz; i <= n; i += ssiz) {
       // compute next segment
-      std::fill(sieve, sieve + ssiz, true);
-      for (int j = 0; j < psiz; j++) {
-         int lo = floor(i / prime[j]) * prime[j];
-         if (lo < i)
-            lo += prime[j];
-         int hi = (i + ssiz <= n) ? i + ssiz : n + 1;
-         for (int k = lo; k < hi; k += prime[j])
-            sieve[k - i] = false;
-      }
+      compute_segment_(prime, sieve, ssiz, i, n);
       // append primes found in current segment
-      int hi = (i + ssiz <= n) ? ssiz : n + 1 - i;
-      for (int j = 0; j < hi; j++)
+      unsigned hi = (i + ssiz <= n) ? ssiz : n + 1 - i;
+      for (unsigned j = 0; j < hi; j++)
          if (sieve[j])
             prime.push_back(i + j);
    }
@@ -106,37 +103,30 @@ std::vector<int> sieveOfEratosthenes::segmented_sieve_(int n)
    return prime;
 }
 
-std::vector<int> sieveOfEratosthenes::n_primes_(int n)
+std::vector<unsigned> sieveOfEratosthenes::n_primes_(unsigned n) const
 {
-   if (n < 1) return std::vector<int>();
+   if (n < 1) return std::vector<unsigned>();
 
-   int ssiz;
+   unsigned ssiz;
    if (n >= 6)
       ssiz = floor(sqrt(n*log(n)+n*log(log(n))))+1;
    else
       ssiz = 12;
 
    // compute base primes
-   std::vector<int> prime = simple_sieve_(ssiz);
-   int psiz = prime.size();
+   std::vector<unsigned> prime = simple_sieve_(ssiz);
+   unsigned psiz = prime.size();
 
    if (psiz >= n)
-      return std::vector<int>(prime.begin(), prime.begin() + n);
-
+      return std::vector<unsigned>(prime.begin(), prime.begin() + n);
+   const std::vector<unsigned> p(prime.begin(), prime.begin() + psiz);
    // compute subsequent sieve segments of size ssiz
    bool* sieve = new bool[ssiz];
-   for (int i = ssiz; ; i += ssiz) {
+   for (unsigned i = ssiz; ; i += ssiz) {
       // compute next segment
-      std::fill(sieve, sieve + ssiz, true);
-      for (int j = 0; j < psiz; j++) {
-         int lo = floor(i / prime[j]) * prime[j];
-         if (lo < i)
-            lo += prime[j];
-         for (int k = lo; k < i + ssiz; k += prime[j])
-            sieve[k - i] = false;
-      }
+      compute_segment_(p, sieve, ssiz, i, i + ssiz);
       // append primes found in current segment
-      for (int j = 0; j < ssiz; j++)
+      for (unsigned j = 0; j < ssiz; j++)
          if (sieve[j]) {
             prime.push_back(i + j);
             if (prime.size() == n) {
@@ -147,31 +137,23 @@ std::vector<int> sieveOfEratosthenes::n_primes_(int n)
    }
 }
 
-int sieveOfEratosthenes::count_primes_(int n)
+unsigned sieveOfEratosthenes::count_primes_(unsigned n) const
 {
    if (n < 2) return 0;
    // compute and count base primes
-   int ssiz = sqrt(n) + 1;
-   std::vector<int> prime = simple_sieve_(ssiz);
-   int psiz = prime.size();
-   int count = psiz;
+   unsigned ssiz = sqrt(n) + 1;
+   std::vector<unsigned> prime = simple_sieve_(ssiz);
+   unsigned psiz = prime.size();
+   unsigned count = psiz;
 
    // compute subsequent sieve segments and count primes found
    bool* sieve = new bool[ssiz];
-   for (int i = ssiz; i <= n; i += ssiz) {
+   for (unsigned i = ssiz; i <= n; i += ssiz) {
       // compute next segment
-      std::fill(sieve, sieve + ssiz, true);
-      for (int j = 0; j < psiz; j++) {
-         int lo = floor(i / prime[j]) * prime[j];
-         if (lo < i)
-            lo += prime[j];
-         int hi = (i + ssiz <= n) ? i + ssiz : n + 1;
-         for (int k = lo; k < hi; k += prime[j])
-            sieve[k - i] = false;
-      }
+      compute_segment_(prime, sieve, ssiz, i, n);
       // append primes found in current segment
-      int hi = (i + ssiz <= n) ? ssiz : n + 1 - i;
-      for (int j = 0; j < hi; j++)
+      unsigned hi = (i + ssiz <= n) ? ssiz : n + 1 - i;
+      for (unsigned j = 0; j < hi; j++)
          if (sieve[j])
             ++count;
    }
@@ -179,37 +161,30 @@ int sieveOfEratosthenes::count_primes_(int n)
    return count;
 }
 
-int sieveOfEratosthenes::nth_prime_(int n)
+unsigned sieveOfEratosthenes::nth_prime_(unsigned n) const
 {
    if (n < 1)
-      return -1;
+      return 0;
 
-   int ssiz;
+   unsigned ssiz;
    if (n >= 6)
       ssiz = floor(sqrt(n * log(n) + n* log(log(n)))) + 1;
    else
       ssiz = 12;
 
    // compute and count base prines
-   std::vector<int> prime = simple_sieve_(ssiz);
-   int psiz = prime.size();
+   std::vector<unsigned> prime = simple_sieve_(ssiz);
+   unsigned psiz = prime.size();
    if (psiz >= n) return prime[n-1];
-   int count = psiz;
+   unsigned count = psiz;
 
    // compute subsequent sieve segments of size ssiz
    bool* sieve = new bool[ssiz];
-   for (int i = ssiz; ; i += ssiz) {
+   for (unsigned i = ssiz; ; i += ssiz) {
       // compute next segment
-      std::fill(sieve, sieve + ssiz, true);
-      for (int j = 0; j < psiz; j++) {
-         int lo = floor(i / prime[j]) * prime[j];
-         if (lo < i)
-            lo += prime[j];
-         for (int k = lo; k < i + ssiz; k += prime[j])
-            sieve[k - i] = false;
-      }
+      compute_segment_(prime, sieve, ssiz, i, i + ssiz);
       // append primes found in current segment
-      for (int j = 0; j < ssiz; j++)
+      for (unsigned j = 0; j < ssiz; j++)
          if (sieve[j]) {
             ++count;
             if (count == n) {
@@ -218,4 +193,50 @@ int sieveOfEratosthenes::nth_prime_(int n)
             }
          }
    }
+}
+
+void sieveOfEratosthenes::compute_segment_(const std::vector<unsigned>& p, bool* s, int ssiz, int idx, int n) const
+{
+  std::fill(s, s + ssiz, true);
+  for (unsigned j = 0; j < p.size(); j++) {
+     unsigned lo = floor(idx / p[j]) * p[j];
+     if (lo < idx)
+        lo += p[j];
+     unsigned hi = (idx + ssiz <= n) ? idx + ssiz : n + 1;
+     for (unsigned k = lo; k < hi; k += p[j])
+        s[k - idx] = false;
+  }
+}
+
+void sieveOfEratosthenes::gap_table_() const
+{
+    const unsigned n = UINT_MAX;
+    const unsigned m = sqrt(n) + 1;
+    const std::vector<unsigned> prime(simple_sieve_(m));
+    unsigned max_gap = 0;
+    for (unsigned i = 1; i < prime.size(); i++) {
+        unsigned gap = prime[i] - prime[i-1] - 1;
+        if (gap > max_gap) {
+            std::cout << prime[i-1] << '\t' << prime[i] << '\t' << gap << std::endl;
+            max_gap = gap;
+        }
+    }
+    unsigned p1 = prime[prime.size() - 1];
+    unsigned p2 = 0;
+    bool* sieve = new bool[m];
+    for (unsigned i = m; i < n-m; i += m) {
+        compute_segment_(prime, sieve, m, i, std::min(m+i, n-m-1));
+        for (unsigned j = 0; j < m; j++) {
+            if (sieve[j]) {
+                p2 = i + j;
+                unsigned gap = p2 - p1 - 1;
+                if (gap > max_gap) {
+                    std::cout << p1 << '\t' << p2 << '\t' << gap << std::endl;
+                    max_gap = gap;
+                }
+                p1 = p2;
+            }
+        }
+    }
+    delete [] sieve;
 }

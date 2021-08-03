@@ -1,5 +1,6 @@
 #include <iostream>
 #include <sstream>
+#include <cmath>
 #include "sieve.hpp"
 
 int main(int argc, char *argv[])
@@ -10,16 +11,16 @@ int main(int argc, char *argv[])
    }
 
    std::istringstream isstr(argv[1]);
-   int n;
+   unsigned n;
    isstr >> n;
-
-   if (n < 1) {
-      std::cerr << "n must be positive" << std::endl;
+   unsigned m = UINT_MAX/log(UINT_MAX);
+   if (n < 1 || n > m) {
+      std::cerr << "1 <= n <= " << m << std::endl;
       return 1;
    }
 
    float t1, t2;
-   std::vector<int> primes;
+   std::vector<unsigned> primes;
    sieveOfEratosthenes mySieve;
 
    std::cout << "simple sieve" << std::endl;
@@ -29,7 +30,7 @@ int main(int argc, char *argv[])
    printVector(primes);
    std::cout << "elapsed time = " << (t2-t1)/CLOCKS_PER_SEC << " seconds\n";
    std::cout << std::endl;
-    
+
    std::cout << "segmented sieve" << std::endl;
    t1 = clock();
    primes = mySieve.segmentedSieve(n);
@@ -59,6 +60,12 @@ int main(int argc, char *argv[])
    int nth_prime = mySieve.nthPrime(n);
    t2 = clock();
    std::cout << "prime no. " << n << " = " << nth_prime << std::endl;
+   std::cout << "elapsed time = " << (t2-t1)/CLOCKS_PER_SEC << " seconds\n";
+
+   std::cout << "gaps tabulation" << std::endl;
+   t1 = clock();
+   mySieve.gapTable();
+   t2 = clock();
    std::cout << "elapsed time = " << (t2-t1)/CLOCKS_PER_SEC << " seconds\n";
 
    return 0;

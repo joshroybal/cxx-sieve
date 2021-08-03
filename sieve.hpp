@@ -3,23 +3,26 @@
 
 #include <vector>
 
-void printArray(const bool*, int);
-void printVector(const std::vector<int>&);
+void printArray(const bool*, unsigned);
+void printVector(const std::vector<unsigned>&);
 
 class sieveOfEratosthenes
 {
    public:
-      int countPrimes(int);
-      int nthPrime(int);
-      std::vector<int> simpleSieve(int);
-      std::vector<int> segmentedSieve(int);
-      std::vector<int> nPrimes(int);
+      unsigned countPrimes(unsigned) const;
+      unsigned nthPrime(unsigned) const;
+      std::vector<unsigned> simpleSieve(unsigned) const;
+      std::vector<unsigned> segmentedSieve(unsigned) const;
+      std::vector<unsigned> nPrimes(unsigned) const;
+      void gapTable() const;
    private:
-      int count_primes_(int);
-      int nth_prime_(int);
-      std::vector<int> simple_sieve_(int);
-      std::vector<int> segmented_sieve_(int);
-      std::vector<int> n_primes_(int);
+      unsigned count_primes_(unsigned) const;
+      unsigned nth_prime_(unsigned) const;
+      std::vector<unsigned> simple_sieve_(unsigned) const;
+      std::vector<unsigned> segmented_sieve_(unsigned) const;
+      std::vector<unsigned> n_primes_(unsigned) const;
+      void compute_segment_(const std::vector<unsigned>&, bool*, int, int, int) const;
+      void gap_table_() const;
 };
 
 #endif

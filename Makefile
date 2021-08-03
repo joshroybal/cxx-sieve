@@ -1,18 +1,16 @@
-CC = clang++
-CFLAGS = -std=c++98 -pedantic -Werror -O2 -g
-LFLAGS = 
-OBJS = sieve.o main.o
-BIN = sieve
-
-sieve: $(OBJS)
-	$(CC) $^ -o $@ $(LFLAGS)
-
-sieve.o: sieve.cpp sieve.hpp
-	$(CC) -c $< $(CFLAGS) -o $@
-
-main.o: main.cpp sieve.hpp
-	$(CC) -c $< $(CFLAGS) -o $@
-
+CXX = cl.exe
+CFLAGS = /Za /EHsc /O2
+LFLAGS =
+ 
+sieve.exe: main.obj sieve.obj
+	$(CXX) /Fe$@ main.obj sieve.obj $(LFLAGS)
+ 
+sieve.obj: sieve.cpp sieve.hpp
+	$(CXX) /c sieve.cpp $(CFLAGS) 
+ 
+main.obj: main.cpp sieve.hpp
+	$(CXX) /c main.cpp $(CFLAGS)
+ 
 .PHONY : clean
 clean:
-	$(RM) $(BIN) $(OBJS) *~
+	del *.exe *.obj
